@@ -1,0 +1,7 @@
+#settings-dialog{border:1px solid var(--line);border-radius:22px;padding:22px;background:var(--surface);color:var(--ink);width:min(520px,90vw);max-height:85dvh;overflow:auto;box-sizing:border-box;font-family:var(--f-body)}
+#settings-dialog::backdrop{background:rgb(0 0 0 / .45)}
+#settings-dialog h2{font-size:20px;margin:0 0 12px}#settings-dialog p{line-height:1.8}
+#settings-dialog label{display:block;margin:14px 0 6px;font-weight:600}
+#settings-dialog input{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--sunk);color:var(--ink);font:inherit;font-size:16px}
+.settings-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.learning-error{border-bottom:1px solid var(--line);padding:10px 0}.learning-error p{margin:5px 0;overflow-wrap:anywhere}
+@media(max-width:450px){header.top{flex-wrap:wrap;gap:10px}#ai-settings{margin-inline-start:auto}}

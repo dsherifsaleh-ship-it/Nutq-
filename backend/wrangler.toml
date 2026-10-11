@@ -1,0 +1,18 @@
+name = "nutq-personal-api"
+main = "worker.mjs"
+compatibility_date = "2026-10-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://dsherifsaleh-ship-it.github.io"
+# Choose an available model supporting Chat Completions JSON mode.
+OPENAI_MODEL = "gpt-4.1-mini"
+DAILY_REQUEST_LIMIT = "30"
+MONTHLY_REQUEST_LIMIT = "300"
+
+[[durable_objects.bindings]]
+name = "QUOTA"
+class_name = "PersonalQuota"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["PersonalQuota"]
