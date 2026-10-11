@@ -1,5 +1,5 @@
 // نُطق — يعمل بدون إنترنت بعد أول فتح. غيّر رقم الإصدار عند تحديث الملفات.
-const CACHE = 'nutq-v1';
+const CACHE = 'nutq-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

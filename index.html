@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-title" content="نُطق">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#1E4C78">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -268,7 +267,7 @@ body.talking .composer{display:block}
 .passage .w.tapped{box-shadow:0 0 0 2px var(--voice)}
 .sh-ar{margin-top:12px;padding:10px 12px;background:var(--sunk);border-inline-start:3px solid var(--voice);border-radius:8px;font-size:16px}
 .sh-ar[hidden]{display:none}
-#sh-player{padding-bottom:230px}
+#sh-player{padding-bottom:290px}
 .shbar{display:none;position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom,0px));z-index:6;background:var(--bg);border-top:1px solid var(--line);padding:6px 12px 8px}
 body.shadowing .shbar{display:block}
 .shbar .row{max-width:720px;margin:0 auto;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
@@ -284,7 +283,7 @@ body.shadowing .shbar{display:block}
 .pcard{display:block;width:100%;text-align:right;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:10px}
 .pcard b{display:block;font-family:var(--f-en);font-size:18px;direction:ltr;text-align:left}
 .pcard span{font-size:14px;color:var(--muted)}
-.wpop{position:fixed;left:12px;right:12px;bottom:calc(240px + env(safe-area-inset-bottom,0px));z-index:9;max-width:520px;margin:0 auto;background:var(--surface);border:1.5px solid var(--accent);border-radius:16px;padding:12px 14px;box-shadow:0 12px 30px rgba(10,30,50,.22)}
+.wpop{position:fixed;left:12px;right:12px;bottom:calc(290px + env(safe-area-inset-bottom,0px));z-index:9;max-width:520px;margin:0 auto;background:var(--surface);border:1.5px solid var(--accent);border-radius:16px;padding:12px 14px;box-shadow:0 12px 30px rgba(10,30,50,.22)}
 .wpop[hidden]{display:none}
 .wpop .top{display:flex;align-items:center;gap:10px}
 .wpop .top b{font-family:var(--f-en);font-size:24px;flex:1;text-align:left;direction:ltr}
@@ -292,6 +291,17 @@ body.shadowing .shbar{display:block}
 .wpop .acts{display:flex;flex-wrap:wrap;gap:6px}
 .wpop .x{border:0;background:none;font-size:24px;line-height:1;color:var(--muted);padding:4px 8px}
 textarea.field{resize:vertical;direction:ltr;text-align:left;font-family:var(--f-en)}
+.vsheet{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1.5px solid var(--accent);border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:78vh;overflow-y:auto;box-shadow:0 -10px 30px rgba(10,30,50,.25)}
+.vsheet[hidden]{display:none}
+.vsheet .vhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.vsheet .vhead h3{font-size:18px}
+.vrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.vrow .n{flex:1;min-width:0}
+.vrow .n b{font-family:var(--f-en);display:block;direction:ltr;text-align:left;font-size:16px}
+.vrow .n small{color:var(--muted);font-size:13px}
+.vrow .sel{border:1.5px solid var(--line);background:var(--sunk);border-radius:999px;padding:5px 14px;font-size:13px}
+.vrow .sel[aria-pressed="true"]{background:var(--accent);color:var(--surface);border-color:var(--accent);font-weight:600}
+.vq{color:var(--good)}
 /* Tabs */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
 nav.tabs .in{display:flex;max-width:720px;width:100%}
@@ -475,9 +485,10 @@ nav.tabs button[aria-selected="true"]{color:var(--accent);font-weight:600}
     <div class="minip" id="sh-mode"><button data-m="after">ردّد بعد كل جملة</button><button data-m="sync">ردّد مع الناطق</button></div>
     <button class="btn small ghost" id="sh-tr">الترجمة</button>
   </div>
-  <div class="row"><div class="minip" id="sh-speed"></div></div>
+  <div class="row"><div class="minip" id="sh-speed" style="flex-wrap:wrap;justify-content:center"></div><button class="btn small ghost" id="sh-voice">🔊 الصوت</button></div>
 </div>
 <div class="wpop" id="wpop" hidden></div>
+<div class="vsheet" id="vsheet" hidden role="dialog" aria-label="اختيار صوت الناطق"></div>
 <div class="composer" id="composer">
   <div class="helps" id="t-helps" hidden></div>
   <div class="live" id="t-live" hidden aria-live="polite"></div>
@@ -496,27 +507,29 @@ nav.tabs button[aria-selected="true"]{color:var(--accent);font-weight:600}
 <script>
 /* ---------- storage ---------- */
 const LS={get(k,d){try{const v=localStorage.getItem('nutq:'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('nutq:'+k,JSON.stringify(v))}catch(e){}}};
-const st={accent:LS.get('accent','us'),speed:LS.get('speed',0.75),slowSyl:LS.get('slowSyl',true)};
+const st={voice:LS.get('voice',''),accent:LS.get('accent','us'),speed:LS.get('speed',0.75),slowSyl:LS.get('slowSyl',true)};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 /* ---------- speech ---------- */
 let voices=[];let runId=0;
+const NOV=/^(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Fred|Junior|Kathy|Ralph)\b/i;
 function loadVoices(){try{voices=speechSynthesis.getVoices()}catch(e){}}
-if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=()=>{loadVoices();const vs=document.getElementById('vsheet');if(vs&&!vs.hidden)renderVoices()}}
 function pickVoice(){
+  if(st.voice){const sv=voices.find(v=>v.name===st.voice);if(sv)return sv}
   const lang=st.accent==='uk'?'en-GB':'en-US';
-  const c=voices.filter(v=>v.lang.replace('_','-').toLowerCase().startsWith(lang.toLowerCase()));
-  const pref=c.find(v=>/Samantha|Daniel|Google|Natural|Enhanced|Premium|Serena|Allison|Ava|Kate/i.test(v.name));
+  const c=voices.filter(v=>v.lang.replace('_','-').toLowerCase().startsWith(lang.toLowerCase())&&!NOV.test(v.name));
+  const pref=c.find(v=>/Premium|Enhanced|Natural|Neural/i.test(v.name))||c.find(v=>/Samantha|Daniel|Google|Serena|Allison|Ava|Kate/i.test(v.name));
   return pref||c[0]||voices.find(v=>v.lang.startsWith('en'))||null;
 }
 function speak(text,rate,opts){
   return new Promise(res=>{
     if(!('speechSynthesis' in window)){res();return}
     const u=new SpeechSynthesisUtterance(text);
-    u.lang=st.accent==='uk'?'en-GB':'en-US';const v=pickVoice();if(v)u.voice=v;
-    u.rate=Math.max(0.5,Math.min(1.5,rate||st.speed));
+    const v=(opts&&opts.voice)||pickVoice();u.lang=v?v.lang:(st.accent==='uk'?'en-GB':'en-US');if(v)u.voice=v;
+    u.rate=Math.max(0.3,Math.min(1.5,rate||st.speed));
     let done=false;const fin=()=>{if(!done){done=true;res()}};
     u.onend=fin;u.onerror=fin;if(opts&&opts.onb)u.onboundary=opts.onb;speechSynthesis.speak(u);
     setTimeout(fin,1500+text.length*260/u.rate);
@@ -527,19 +540,21 @@ function stopAll(){runId++;try{speechSynthesis.cancel()}catch(e){};document.quer
 /* ---------- accent ---------- */
 document.querySelectorAll('[data-accent]').forEach(b=>{
   b.setAttribute('aria-pressed',b.dataset.accent===st.accent);
-  b.onclick=()=>{st.accent=b.dataset.accent;LS.set('accent',st.accent);document.querySelectorAll('[data-accent]').forEach(x=>x.setAttribute('aria-pressed',x===b));if(cur)renderCard()};
+  b.onclick=()=>{st.accent=b.dataset.accent;LS.set('accent',st.accent);st.voice='';LS.set('voice','');document.querySelectorAll('[data-accent]').forEach(x=>x.setAttribute('aria-pressed',x===b));if(cur)renderCard()};
 });
 
 /* ---------- speed panel ---------- */
 function renderSpeed(){
   const p=$('#speed-panel');
-  const pres=[[0.5,'بطيء جدًا'],[0.75,'بطيء'],[1,'طبيعي'],[1.25,'سريع']];
+  const pres=[[0.4,'أبطأ'],[0.55,'بطيء جدًا'],[0.75,'بطيء'],[1,'طبيعي'],[1.25,'سريع']];
   p.innerHTML=`<h3>سرعة النطق</h3><div class="presets">${pres.map(([v,l])=>`<button data-sp="${v}" aria-pressed="${Math.abs(st.speed-v)<.01}">${l}<br><span class="en" style="font-size:12px">${v}×</span></button>`).join('')}</div>
-  <div class="slider-row"><input type="range" min="0.5" max="1.5" step="0.05" value="${st.speed}" id="sp-range" aria-label="السرعة"><output class="en" id="sp-out">${st.speed.toFixed(2)}×</output></div>
-  <label class="toggle"><input type="checkbox" id="sp-syl" ${st.slowSyl?'checked':''}>المقاطع دائمًا ببطء، والكلمة الكاملة بالسرعة المختارة</label>`;
+  <div class="slider-row"><input type="range" min="0.3" max="1.5" step="0.05" value="${st.speed}" id="sp-range" aria-label="السرعة"><output class="en" id="sp-out">${st.speed.toFixed(2)}×</output></div>
+  <label class="toggle"><input type="checkbox" id="sp-syl" ${st.slowSyl?'checked':''}>المقاطع دائمًا ببطء، والكلمة الكاملة بالسرعة المختارة</label>
+  <button class="btn small ghost" id="sp-voice" style="margin-top:10px;width:100%">🔊 اختيار صوت الناطق</button>`;
   p.querySelectorAll('[data-sp]').forEach(b=>b.onclick=()=>{setSpeed(+b.dataset.sp);renderSpeed()});
   $('#sp-range').oninput=e=>{setSpeed(+e.target.value);$('#sp-out').textContent=st.speed.toFixed(2)+'×';p.querySelectorAll('[data-sp]').forEach(b=>b.setAttribute('aria-pressed',Math.abs(st.speed-b.dataset.sp)<.01))};
   $('#sp-syl').onchange=e=>{st.slowSyl=e.target.checked;LS.set('slowSyl',st.slowSyl)};
+  $('#sp-voice').onclick=openVoices;
 }
 function setSpeed(v){st.speed=Math.round(v*100)/100;LS.set('speed',st.speed)}
 renderSpeed();
@@ -996,7 +1011,7 @@ function renderTalkSetup(){
   $('#t-topic').hidden=tc.scen!=='free';
   $('#t-level').innerHTML=LV.map(([k,a])=>`<button data-l="${k}" aria-pressed="${tc.lvl===k}">${a}<br><span class="en" style="font-size:12px">${k}</span></button>`).join('');
   $('#t-level').querySelectorAll('button').forEach(b=>b.onclick=()=>{tc.lvl=b.dataset.l;LS.set('tLvl',tc.lvl);renderTalkSetup()});
-  $('#t-speed').innerHTML=[[0.6,'بطيء'],[0.8,'هادئ'],[1,'طبيعي']].map(([v,l])=>`<button data-sp="${v}" aria-pressed="${Math.abs(st.speed-v)<.01}">${l}</button>`).join('');
+  $('#t-speed').innerHTML=[[0.45,'بطيء جدًا'],[0.6,'بطيء'],[0.8,'هادئ'],[1,'طبيعي']].map(([v,l])=>`<button data-sp="${v}" aria-pressed="${Math.abs(st.speed-v)<.01}">${l}</button>`).join('');
   $('#t-speed').querySelectorAll('button').forEach(b=>b.onclick=()=>{setSpeed(+b.dataset.sp);renderSpeed();renderTalkSetup()});
   $('#t-auto').checked=tc.auto;
   $('#t-mode').querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.m===tc.mode);b.onclick=()=>{tc.mode=b.dataset.m;LS.set('tMode',tc.mode);renderTalkSetup()}});
@@ -1193,7 +1208,7 @@ function renderShBar(){
   $('#sh-play').innerHTML=sh.playing?ICON_PAUSE:ICON_PLAY;$('#sh-play').setAttribute('aria-label',sh.playing?'إيقاف':'تشغيل');
   $('#sh-mode').querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.m===sh.mode);b.onclick=()=>{sh.mode=b.dataset.m;LS.set('shMode',sh.mode);renderShBar()}});
   $('#sh-tr').textContent=sh.showAr?'إخفاء الترجمة':'الترجمة';
-  $('#sh-speed').innerHTML=[[0.6,'بطيء'],[0.8,'هادئ'],[1,'طبيعي'],[1.15,'سريع']].map(([v,l])=>`<button data-sp="${v}" aria-pressed="${Math.abs(st.speed-v)<.01}">${l}</button>`).join('');
+  $('#sh-speed').innerHTML=[[0.4,'أبطأ'],[0.55,'بطيء جدًا'],[0.7,'بطيء'],[0.85,'هادئ'],[1,'طبيعي']].map(([v,l])=>`<button data-sp="${v}" aria-pressed="${Math.abs(st.speed-v)<.01}">${l}</button>`).join('');
   $('#sh-speed').querySelectorAll('button').forEach(b=>b.onclick=()=>{setSpeed(+b.dataset.sp);renderSpeed();renderShBar()});
 }
 async function playFrom(i,single){
@@ -1216,6 +1231,7 @@ $('#sh-play').onclick=()=>{if(sh.playing){haltSh();return}playFrom(sh.i,false)};
 $('#sh-rep').onclick=()=>playFrom(sh.i,true);
 $('#sh-prev').onclick=()=>{haltSh();setCur(sh.i-1)};
 $('#sh-next').onclick=()=>{haltSh();setCur(sh.i+1)};
+$('#sh-voice').onclick=()=>{haltSh();openVoices()};
 $('#sh-tr').onclick=()=>{sh.showAr=!sh.showAr;LS.set('shAr',sh.showAr);renderShBar();renderAr()};
 $('#sh-back').onclick=()=>{haltSh();$('#wpop').hidden=true;$('#sh-player').hidden=true;$('#sh-list').hidden=false;syncComposer();window.scrollTo({top:0})};
 function gloss(word){
@@ -1262,6 +1278,30 @@ $('#sh-gen').onclick=async()=>{
   btn.disabled=false;
 };
 renderShList();
+
+/* ---------- voice picker ---------- */
+const ACC={US:'أمريكي',GB:'بريطاني',AU:'أسترالي',IE:'أيرلندي',IN:'هندي',ZA:'جنوب أفريقي',NZ:'نيوزيلندي',CA:'كندي',SG:'سنغافوري',SC:'اسكتلندي'};
+function engVoices(){
+  loadVoices();const seen=new Set();const want=st.accent==='uk'?'GB':'US';
+  const q=v=>/Premium|Enhanced|Natural|Neural|Google/i.test(v.name)?0:1;
+  return voices.filter(v=>/^en[-_]/i.test(v.lang)&&!NOV.test(v.name)&&!seen.has(v.name+v.lang)&&seen.add(v.name+v.lang))
+    .sort((a,b)=>{const ra=a.lang.toUpperCase().endsWith(want)?0:1,rb=b.lang.toUpperCase().endsWith(want)?0:1;return ra-rb||q(a)-q(b)||a.name.localeCompare(b.name)});
+}
+function openVoices(){renderVoices();$('#vsheet').hidden=false}
+function renderVoices(){
+  const list=engVoices();const box=$('#vsheet');
+  const auto=!st.voice||!voices.some(v=>v.name===st.voice);
+  box.innerHTML=`<div class="vhead"><h3>اختر صوت الناطق</h3><button class="btn small ghost" id="v-close">تم</button></div>
+  <p class="hint">اضغط ▶ لتسمع كل صوت، ثم «اختر» للصوت الأوضح لك. الاختيار يُطبَّق على التطبيق كله.</p>
+  <div class="vrow"><div class="n"><b style="font-family:var(--f-body);direction:rtl;text-align:right">تلقائي</b><small>أفضل صوت ${st.accent==='uk'?'بريطاني':'أمريكي'} متاح على جهازك</small></div><button class="sel" data-auto="1" aria-pressed="${auto}">${auto?'مختار ✓':'اختر'}</button></div>
+  ${list.length?list.map((v,i)=>{const cc=(v.lang.split(/[-_]/)[1]||'').toUpperCase();const hq=/Premium|Enhanced|Natural|Neural|Google/i.test(v.name);const on=!auto&&v.name===st.voice;
+    return `<div class="vrow"><button class="iconbtn" data-p="${i}" aria-label="استمع">${PLAY}</button><div class="n"><b>${esc(v.name)}</b><small>${ACC[cc]||esc(v.lang)}${hq?' · <span class="vq">جودة عالية</span>':''}</small></div><button class="sel" data-i="${i}" aria-pressed="${on}">${on?'مختار ✓':'اختر'}</button></div>`}).join('')
+   :'<p class="hint">جارٍ تحميل الأصوات… إن لم تظهر، أغلق هذه النافذة وافتحها مرة أخرى.</p>'}
+  <p class="hint" style="margin-top:12px">💡 لأصوات أوضح على الآيفون: الإعدادات ← تسهيلات الاستخدام ← المحتوى المنطوق ← الأصوات ← الإنجليزية، ونزّل صوتًا مكتوبًا بجانبه «محسّن» أو «Premium»، ثم ارجع هنا واختره.</p>`;
+  $('#v-close').onclick=()=>{stopAll();box.hidden=true;if(sh&&sh.p)renderShBar()};
+  box.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{stopAll();speak('Hello! This is how I sound. Let us practice together.',st.speed,{voice:list[+b.dataset.p]})});
+  box.querySelectorAll('.sel').forEach(b=>b.onclick=()=>{if(b.dataset.auto){st.voice=''}else{st.voice=list[+b.dataset.i].name;stopAll();speak('Great choice.',st.speed)}LS.set('voice',st.voice);renderVoices()});
+}
 
 /* ---------- tabs ---------- */
 function showView(v){
